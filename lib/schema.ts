@@ -1,73 +1,89 @@
-import { relations } from 'drizzle-orm';
 import {
-  pgTable,
-  serial,
-  integer,
-  text,
+  boolean,
   timestamp,
-  uniqueIndex,
-} from 'drizzle-orm/pg-core';
+  pgTable,
+  text,
+  primaryKey,
+  integer,
+  pgTableCreator,
+} from "drizzle-orm/pg-core"
+import type { AdapterAccountType } from "next-auth/adapters"
 
-type uom = "mg" | "g" | "kg" | "ml" | "dl" | "l" | "tsp" | "tbsp"
-
-// Create a pgTable that maps to a table in your DB
-export const person = pgTable(
-  'person',
+export const createTable = pgTableCreator((name) => `gg_${name}`)
+ 
+export const users = createTable("user", {
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+  name: text("name"),
+  email: text("email").unique(),
+  emailVerified: timestamp("emailVerified", { mode: "date" }),
+  image: text("image"),
+})
+ 
+export const accounts = createTable(
+  "account",
   {
-    id: serial('id').primaryKey(),
-    name: text('name').notNull(),
-    email: text('email').notNull(),
-    image: text('image').notNull(),
-    createdAt: timestamp('createdAt').defaultNow().notNull(),
+    userId: text("userId")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    type: text("type").$type<AdapterAccountType>().notNull(),
+    provider: text("provider").notNull(),
+    providerAccountId: text("providerAccountId").notNull(),
+    refresh_token: text("refresh_token"),
+    access_token: text("access_token"),
+    expires_at: integer("expires_at"),
+    token_type: text("token_type"),
+    scope: text("scope"),
+    id_token: text("id_token"),
+    session_state: text("session_state"),
   },
-  (users) => {
-    return {
-      uniqueIdx: uniqueIndex('unique_idx').on(users.email),
-    };
-  },
-);
-
-export const step = pgTable(
-  'step',
-  {
-    id: serial('id').primaryKey(),
-    recipe_id: integer('recipe_id').notNull(),
-    number: integer('number').notNull(),
-    description: text('description').notNull()
-  }
-)
-
-export const incredient = pgTable(
-  'incredient',
-  {
-    id: serial('id').primaryKey(),
-    name: text('name').notNull(),
-    amount: integer('amount').notNull(),
-    uom: text('uom'),
-    url: text('url'),
-    price: text('price')
-  }
-)
-
-export const recipe = pgTable(
-  'recipe',
-  {
-    id: serial('id').primaryKey(),
-    person_id: integer('person_id').references(() => person.id),
-    name: text('name').notNull(),
-    prepTime: integer('prepTime').notNull(),
-    size: integer('size').notNull(),
-    description: text('description')
-  }
-)
-
-export const stepRelations = relations(step, ({ one }) => ({
-  recipe: one(recipe, {
-    fields: [step.recipe_id],
-    references: [recipe.id]
+  (account) => ({
+    compoundKey: primaryKey({
+      columns: [account.provider, account.providerAccountId],
+    }),
   })
-}))
-
-export const recipeRelations = relations(recipe, ({ many }) => ({
-  steps: many(step)
-}))
+)
+ 
+export const sessions = createTable("session", {
+  sessionToken: text("sessionToken").primaryKey(),
+  userId: text("userId")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  expires: timestamp("expires", { mode: "date" }).notNull(),
+})
+ 
+export const verificationTokens = createTable(
+  "verificationToken",
+  {
+    identifier: text("identifier").notNull(),
+    token: text("token").notNull(),
+    expires: timestamp("expires", { mode: "date" }).notNull(),
+  },
+  (verificationToken) => ({
+    compositePk: primaryKey({
+      columns: [verificationToken.identifier, verificationToken.token],
+    }),
+  })
+)
+ 
+export const authenticators = createTable(
+  "authenticator",
+  {
+    credentialID: text("credentialID").notNull().unique(),
+    userId: text("userId")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    providerAccountId: text("providerAccountId").notNull(),
+    credentialPublicKey: text("credentialPublicKey").notNull(),
+    counter: integer("counter").notNull(),
+    credentialDeviceType: text("credentialDeviceType").notNull(),
+    credentialBackedUp: boolean("credentialBackedUp").notNull(),
+    transports: text("transports"),
+  },
+  (authenticator) => ({
+    compositePK: primaryKey({
+      columns: [authenticator.userId, authenticator.credentialID],
+    }),
+  })
+)
