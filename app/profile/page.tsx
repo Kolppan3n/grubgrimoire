@@ -3,8 +3,7 @@ import { auth } from "@/auth"
 
 const profile = async () => {
   const session = await auth()
-  const sessionString = JSON.stringify(session)
-  console.log(sessionString)
+  console.log(session)
 
   return (
     <main className="flex items-center justify-center">
