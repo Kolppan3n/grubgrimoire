@@ -15,6 +15,13 @@
       "when": 1724063479090,
       "tag": "0001_sudden_switch",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1725271163213,
+      "tag": "0002_chilly_giant_man",
+      "breakpoints": true
     }
   ]
 }

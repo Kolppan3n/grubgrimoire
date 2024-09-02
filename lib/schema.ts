@@ -1,9 +1,7 @@
-import { int } from "drizzle-orm/mysql-core"
 import {
   serial,
   boolean,
   timestamp,
-  pgTable,
   text,
   primaryKey,
   integer,
@@ -23,7 +21,7 @@ export const users = createTable("user", {
   emailVerified: timestamp("emailVerified", { mode: "date" }),
   image: text("image"),
 })
- 
+
 export const accounts = createTable(
   "account",
   {
@@ -103,7 +101,7 @@ export const units = createTable(
 export const steps = createTable(
   "step",
   {
-    serial: text("id").primaryKey(),
+    id: serial("id").primaryKey(),
     number: integer("number").notNull(),
     description: text("description")
   }
@@ -112,7 +110,7 @@ export const steps = createTable(
 export const incredients = createTable(
   "incredient",
   {
-    serial: serial("id").primaryKey(),
+    id: serial("id").primaryKey(),
     name: text("name").notNull(),
     amount: integer("amount").notNull(),
     unit_id: integer("unit_id").references(() => units.id)
@@ -122,7 +120,7 @@ export const incredients = createTable(
 export const recipes = createTable(
   "recipe",
   {
-    serial: text("id").primaryKey(),
+    id: serial("id").primaryKey(),
     user_id: text("user_id").references(() => users.id),
     name: text("name").notNull(),
     prepTime: integer("prepTime"),
