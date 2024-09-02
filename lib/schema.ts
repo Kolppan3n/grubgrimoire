@@ -1,4 +1,6 @@
+import { int } from "drizzle-orm/mysql-core"
 import {
+  serial,
   boolean,
   timestamp,
   pgTable,
@@ -10,7 +12,8 @@ import {
 import type { AdapterAccountType } from "next-auth/adapters"
 
 export const createTable = pgTableCreator((name) => `gg_${name}`)
- 
+
+//four tables to manage users
 export const users = createTable("user", {
   id: text("id")
     .primaryKey()
@@ -86,4 +89,48 @@ export const authenticators = createTable(
       columns: [authenticator.userId, authenticator.credentialID],
     }),
   })
+)
+
+//tables to manage recipes
+export const units = createTable(
+  "unit",
+  {
+    id: serial("id").primaryKey(),
+    name: text("name").notNull()
+  }
+)
+
+export const steps = createTable(
+  "step",
+  {
+    serial: text("id").primaryKey(),
+    number: integer("number").notNull(),
+    description: text("description")
+  }
+)
+
+export const incredients = createTable(
+  "incredient",
+  {
+    serial: serial("id").primaryKey(),
+    name: text("name").notNull(),
+    amount: integer("amount").notNull(),
+    unit_id: integer("unit_id").references(() => units.id)
+  }
+)
+
+export const recipes = createTable(
+  "recipe",
+  {
+    serial: text("id").primaryKey(),
+    user_id: text("user_id").references(() => users.id),
+    name: text("name").notNull(),
+    prepTime: integer("prepTime"),
+    size: integer("size"),
+    description: text("description"),
+    step_id: integer("step_id").references(() => steps.id, { onDelete: "cascade" }),
+    incredient_id: integer("incredient_id").references(() => incredients.id, {onDelete: "cascade"}),
+    createdAt: timestamp("createdAt", { mode: "date" }),
+    lastEdit: timestamp("lastEdit", {mode: "date"})
+  }
 )
