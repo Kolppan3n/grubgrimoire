@@ -1,3 +1,4 @@
+import { int } from "drizzle-orm/mysql-core"
 import {
   serial,
   boolean,
@@ -102,6 +103,7 @@ export const steps = createTable(
   "step",
   {
     id: serial("id").primaryKey(),
+    recipe_id: integer("recipe_id").references(() => recipes.id),
     number: integer("number").notNull(),
     description: text("description")
   }
@@ -111,6 +113,7 @@ export const incredients = createTable(
   "incredient",
   {
     id: serial("id").primaryKey(),
+    recipe_id: integer("recipe_id").references(() => recipes.id),
     name: text("name").notNull(),
     amount: integer("amount").notNull(),
     unit_id: integer("unit_id").references(() => units.id)
@@ -126,8 +129,6 @@ export const recipes = createTable(
     prepTime: integer("prepTime"),
     size: integer("size"),
     description: text("description"),
-    step_id: integer("step_id").references(() => steps.id, { onDelete: "cascade" }),
-    incredient_id: integer("incredient_id").references(() => incredients.id, {onDelete: "cascade"}),
     createdAt: timestamp("createdAt", { mode: "date" }),
     lastEdit: timestamp("lastEdit", {mode: "date"})
   }

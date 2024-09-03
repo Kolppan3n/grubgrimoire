@@ -12,5 +12,5 @@ export const initUnits = async() => {
         { name: 'mg' }, { name: 'g' }, { name: 'kg' }, 
         { name: 'ml' }, { name: 'dl' }, { name: 'l' }, 
         { name: 'tsp' }, { name: 'tbs' }
-    ]).onConflictDoUpdate;
+    ]).onConflictDoUpdate
 }
